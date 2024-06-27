@@ -10,6 +10,8 @@ const httpServer = createServer(app);
 app.use(express.json());
 app.use(cors());
 
+let users = [];
+
 const socketIO = new Server(httpServer, {
     cors: {
         origin: "http://localhost:5173"
@@ -23,8 +25,17 @@ socketIO.on('connection', (socket)=>{
     socketIO.emit("messageResponse", data)
   });
 
+  socket.on('newUser', (data)=>{
+    //adds user to the list
+    users.push(data);
+    //sends the new list of users
+    socketIO.emit('newUserResponse', users)
+  });
+
   socket.on('disconnect', () => {
     console.log('🔥: A user disconnected');
+
+    users = users.filter((user) => user.socketID !== socket.id);
     socket.disconnect()
   });
 });
